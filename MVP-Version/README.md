@@ -59,3 +59,22 @@ MVP 最小可行产品(Minimum Viable Product)
   在微信开放平台下载 adapter 文件然后使用 build 命令打包后放到根目录下  
   在 game.js 中引入 adapter 提供 canvas 组件  
   调整场景的大小尺寸  
+
+- MVP 版本基本场景搭建  
+  在场景中渲染出元素 -> renderer、scene、camera 在 canvas 上渲染出场景  
+  视角和相机 camera 的设置  
+  Light 和 Shadow 的设置 -> 使用方式和形成原理，如何设置  
+  bottle 和 block 物体的设置 -> geometries  
+  
+- 基本场景渲染  
+  1. THREE.WebGLRenderer -> 将场景定义的元素物体渲染到 canvas 上  
+  2. THREE.Scene -> 所有要渲染的元素定义在 scene 中，包括形状、光线等  
+  3. THREE.Camera -> 坐标视角  
+  最终顶点坐标 = 投影矩阵 × 视图矩阵 × 模型矩阵 × 顶点坐标  
+  
+- 坐标辅助  
+  ```js
+  var axesHelper = new THREE.AxesHelper(100)
+  scene.add(axesHelper)
+  ```
+  red -> X 轴  green -> Y 轴  blue -> Z 轴  
