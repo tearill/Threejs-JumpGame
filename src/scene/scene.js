@@ -15,6 +15,11 @@ class Scene {
       preserveDrawingBuffer: true // 保存绘制缓冲区
     })
 
+    renderer.shadowMap.enabled = true // 启用阴影
+    renderer.shadowMap.type = THREE.PCFShadowMap // 设置类型
+    // using the Percentage-Closer Filtering (PCF) algorithm (default)
+
+
     // 调用 camera
     this.camera = camera
     this.light = light

@@ -78,3 +78,23 @@ MVP 最小可行产品(Minimum Viable Product)
   scene.add(axesHelper)
   ```
   red -> X 轴  green -> Y 轴  blue -> Z 轴  
+
+- shadow 相关类型和需要配置的值  
+  类型           | 值
+  ------------- | -------------
+  渲染器启用阴影  | renderer.shadowMapEnable
+  能形成阴影的光源  | DirectionalLight & SpotLight
+  能够表现阴影的材质 |　LambertMaterial & PhongMaterial
+  光源启用阴影      |  castShadow
+  物体投射阴影      |  castShadow
+  物体接收阴影      |  receiveShadow  
+
+- Bottle(跳跃的对象) 的绘制  
+  四个部分：  
+  上方头部：  
+  1. OctahedronGeometry  
+  下方身体部分：  
+  2. 最上方部分：一个 SphereGeometry 构成的半球  
+  3. 中间部分：一个 CylinderGeometry 构成的圆柱  
+  4. 底部：一个 CylinderGeometry 构成的圆台  
+
