@@ -36,10 +36,12 @@ export default class GamePage {
 
   touchStartCallback = () => {
     console.log('touch start callback')
+    this.bottle.shrink()
   }
 
   touchEndCallback = () => {
     console.log('touch end callback')
+    this.bottle.stop()
     this.bottle.rotate()
   }
 

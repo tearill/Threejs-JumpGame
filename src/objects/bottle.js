@@ -13,8 +13,10 @@ import { customAnimation } from '../../libs/animation'
 
 class Bottle {
   constructor() {
+    this.status = 'stop'
     this.direction = 1
     this.axis = null // 跳跃所沿着的轴
+    this.scale = 1
   }
 
   init() {
@@ -127,11 +129,7 @@ class Bottle {
     return { specularMaterial, middleMaterial, bottomMaterial }
   }
 
-  // bottle 位置的更新
-  update() {
-    this.head.rotation.y += 0.06 // 顶部菱形旋转
-  }
-
+  
   // 游戏开局 bottle 从天而降
   showUp() {
     customAnimation.to(this.obj.position, 0.5, {
@@ -140,12 +138,44 @@ class Bottle {
       z: bottleConf.initPosition.z
     }, 'BounceEaseOut')
   }
-
+  
   setDirection(direction, axis) {
     this.direction = direction
     this.axis = axis
   }
+  
+  // 收缩蓄力
+  shrink() {
+    this.status = 'shrink'
+  }
 
+  // 按压收缩蓄力效果实现
+  _shrink() {
+    const MIN_SCALE = 0.55 // 压缩的最大范围
+    const HORIZON_DELTA_SCALE = 0.007
+    const DELTA_SCALE = 0.005
+    const HEAD_DELTA = 0.03
+
+    this.scale -= DELTA_SCALE
+    this.scale = Math.max(MIN_SCALE, this.scale)
+    if (this.scale <= MIN_SCALE) {
+      return
+    }
+
+    this.body.scale.y = this.scale
+    this.body.scale.x += HORIZON_DELTA_SCALE
+    this.body.scale.z += HORIZON_DELTA_SCALE
+    this.head.position.y -= HEAD_DELTA
+
+    const bottleDeltaY = HEAD_DELTA / 2 
+    this.obj.position.y -= bottleDeltaY
+  }
+
+  stop() {
+    this.scale = 1 // 还原
+    this.status = 'stop'
+  }
+  
   rotate() {
     const scale = 1.4
     this.human.rotation.x = this.human.rotation.z = 0
@@ -168,6 +198,23 @@ class Bottle {
       customAnimation.to(this.body.scale, 0.05, { y: Math.min(0.9 / scale, 0.7), x: Math.max(scale, 1.2), z: Math.max(scale, 1.2)}, 'Linear', 0.1)
       customAnimation.to(this.body.scale, 0.2, { y: 1, x: 1, z: 1, }, 'Linear', 0.2)
     }
+  }
+  
+  jump() {
+    this.status = 'jump'
+  }
+  
+  _jump() {
+    
+  }
+
+  // bottle 位置的更新
+  update() {
+    if (this.status === 'shrink') {
+      // 收缩
+      this._shrink()
+    }
+    this.head.rotation.y += 0.06 // 顶部菱形旋转
   }
 }
 
