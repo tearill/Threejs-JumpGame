@@ -98,3 +98,135 @@ MVP 最小可行产品(Minimum Viable Product)
   3. 中间部分：一个 CylinderGeometry 构成的圆柱  
   4. 底部：一个 CylinderGeometry 构成的圆台  
 
+  将各个部分统一放在一个 object 中，方便作为一个整体管理  
+  bottle 的各个部分添加到这个 3D 的 object 中，作为子元素管理  
+
+- 小游戏引入图片资源的相对路径踩坑  
+  小游戏中要引入图片资源，相对路径必须以 /game 开头  
+
+- 微信小程序中使用 THREE.TextureLoader() 报错  
+  `document.createElementNS is not a function`  
+  微信小程序不适配 TextureLoader  
+  解决方案：改写 Three.js 源码中的 ImageLoader 和 TextureLoader 部分  
+  ```js
+  function registerTextureLoader(THREE) {
+
+    console.log("注册新的T&I加载器")
+
+    THREE.ImageLoader = (function () {
+      function ImageLoader(manager) {
+        this.manager = (manager !== undefined) ? manager : THREE.DefaultLoadingManager;
+      }
+      Object.assign(ImageLoader.prototype, {
+        crossOrigin: 'anonymous',
+        load: function (url, onLoad, onProgress, onError) {
+          if (url === undefined) url = '';
+          if (this.path !== undefined) url = this.path + url;
+          url = this.manager.resolveURL(url);
+          // console.log(url)
+          var scope = this;
+          var cached = THREE.Cache.get(url);
+          if (cached !== undefined) {
+            scope.manager.itemStart(url);
+            setTimeout(function () {
+              if (onLoad) onLoad(cached);
+              scope.manager.itemEnd(url);
+            }, 0);
+            return cached;
+          }
+          var image = new Image();
+
+          function onImageLoad() {
+            image.onload = function () { };
+            image.onerror = function () { };
+
+            console.log("图片加载完毕")
+            THREE.Cache.add(url, this);
+            if (onLoad) onLoad(this);
+            scope.manager.itemEnd(url);
+          }
+
+          function onImageError(event) {
+            console.log("图片加载失败")
+            image.onload = function () { };
+            image.onerror = function () { };
+            if (onError) onError(event);
+            scope.manager.itemEnd(url);
+            scope.manager.itemError(url);
+          }
+          image.onload = onImageLoad;
+          image.onerror = onImageError;
+          if (url.substr(0, 5) !== 'data:') {
+            if (this.crossOrigin !== undefined) image.crossOrigin = this.crossOrigin;
+
+          }
+          scope.manager.itemStart(url);
+          image.src = url;
+          return image;
+        },
+        setCrossOrigin: function (value) {
+          this.crossOrigin = value;
+          return this;
+        },
+        setPath: function (value) {
+          this.path = value;
+          return this;
+        }
+      });
+
+      return ImageLoader
+    })()
+
+    THREE.TextureLoader = (function () {
+      function TextureLoader(manager) {
+        this.manager = (manager !== undefined) ? manager : THREE.DefaultLoadingManager;
+      }
+      Object.assign(TextureLoader.prototype, {
+        crossOrigin: 'anonymous',
+        load: function (url, onLoad, onProgress, onError) {
+          var texture = new THREE.Texture();
+          var loader = new THREE.ImageLoader(this.manager);
+          loader.setCrossOrigin(this.crossOrigin);
+          loader.setPath(this.path);
+          loader.load(url, function (image) {
+            texture.image = image;
+            var isJPEG = url.search(/\.jpe?g$/i) > 0 || url.search(/^data\:image\/jpeg/) === 0;
+            texture.format = isJPEG ? THREE.RGBFormat : THREE.RGBAFormat;
+            texture.needsUpdate = true;
+            if (onLoad !== undefined) {
+              onLoad(texture);
+            }
+          }, onProgress, onError);
+          return texture;
+        },
+        setCrossOrigin: function (value) {
+          this.crossOrigin = value;
+          return this;
+        },
+        setPath: function (value) {
+          this.path = value;
+          return this;
+        }
+      });
+      return TextureLoader
+    })();
+  }
+
+  registerTextureLoader(THREE)
+  ```
+  在 main.js 中新建函数修改，不直接修改源码  
+  修改之后依旧报错：  
+  ```js
+  gameThirdScriptError
+  ImageBitmap is not defined
+  ReferenceError: ImageBitmap is not define 
+  ```
+  原因定位到 Three.js 源码中 `makePowerOfTwo` 函数  
+  `if ( image instanceof HTMLImageElement || image instanceof HTMLCanvasElement || image instanceof ImageBitmap )`  
+  小程序中没有 DOM API，而 Three.js 在创建图片对象的时候会使用 `var image = document.createElementNS( 'http://www.w3.org/1999/xhtml', 'img' );`  
+  所以在判断 image 类型的时候会去判断是否是 `ImageBitmap` 类型，要去掉 `image instanceof ImageBitmap` 的判断部分  
+
+- bottle 的斜上抛运动  
+  垂直方向：竖直上抛运动(结合重力加速度)  
+  水平方向：匀速直线运动  
+
