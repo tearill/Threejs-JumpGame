@@ -38,9 +38,14 @@ class Scene {
     this.background.instance.position.z = -84
     this.camera.instance.add(this.background.instance)
   }
-
+  
   render() {
     this.renderer.render(this.instance, this.camera.instance)
+  }
+
+  updateCameraPosition(targetPosition) {
+    this.camera.updatePosition(targetPosition)
+    this.light.updatePosition(targetPosition)
   }
 }
 

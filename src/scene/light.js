@@ -1,3 +1,5 @@
+import { customAnimation } from '../../libs/animation'
+
 class Light {
   constructor() {
     this.instances = {} // 存储 light 光照类型
@@ -5,7 +7,7 @@ class Light {
 
   init() {
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.8) // 环境光
-    const shadowLight = new THREE.DirectionalLight(0xffffff, 0.3) // 平行光
+    const shadowLight = this.shadowLight = new THREE.DirectionalLight(0xffffff, 0.3) // 平行光
 
     shadowLight.position.set(10, 30, 20) // 光线方向
     shadowLight.castShadow = true // 光源启用阴影
@@ -26,6 +28,16 @@ class Light {
     this.instances.ambientLight = ambientLight
     this.instances.shadowLight = shadowLight
     this.instances.shadowTarget = this.shadowTarget
+  }
+
+  updatePosition (targetPosition) {
+    customAnimation.to(0.5, this.shadowTarget.position, {x: targetPosition.x, y: targetPosition.y, z: targetPosition.z})
+    customAnimation.to(0.5, this.shadowLight.position, {x: 10 + targetPosition.x, y: 30 + targetPosition.y, z: 20 + targetPosition.z})
+  }
+
+  reset () {
+    this.shadowLight.position.set(10, 30, 20)
+    this.shadowTarget.position.set(0, 0, 0)
   }
 }
 

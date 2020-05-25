@@ -9,6 +9,7 @@
 
 import bottleConf from '../../config/bottle-config'
 import blockConf from '../../config/block-config'
+import gameConf from '../../config/game-config'
 import { customAnimation } from '../../libs/animation'
 
 class Bottle {
@@ -16,7 +17,12 @@ class Bottle {
     this.status = 'stop'
     this.direction = 1
     this.axis = null // 跳跃所沿着的轴
+    this.flyingTime = 0 // 跳跃的运动时间
     this.scale = 1
+    this.velocity = {
+      vx: 0, // 水平方向速度
+      vy: 0 //竖直方向速度
+    }
   }
 
   init() {
@@ -132,7 +138,7 @@ class Bottle {
   
   // 游戏开局 bottle 从天而降
   showUp() {
-    customAnimation.to(this.obj.position, 0.5, {
+    customAnimation.to(0.5, this.obj.position, {
       x: bottleConf.initPosition.x, 
       y: bottleConf.initPosition.y + blockConf.height / 2,
       z: bottleConf.initPosition.z
@@ -167,36 +173,33 @@ class Bottle {
     this.body.scale.z += HORIZON_DELTA_SCALE
     this.head.position.y -= HEAD_DELTA
 
-    const bottleDeltaY = HEAD_DELTA / 2 
-    this.obj.position.y -= bottleDeltaY
-  }
-
-  stop() {
-    this.scale = 1 // 还原
-    this.status = 'stop'
+    const bottleDeltaY = HEAD_DELTA / 2
+    const deltaY = blockConf.height * DELTA_SCALE / 2
+    // 压缩的时候质心会上移
+    this.obj.position.y -= bottleDeltaY + deltaY * 2 // 不减会造成 bottle 和 block 砖块平面分离
   }
   
   rotate() {
     const scale = 1.4
     this.human.rotation.x = this.human.rotation.z = 0
     if (this.direction == 0) { // 沿 x 轴跳跃
-      customAnimation.to(this.human.rotation, 0.14, {z: this.human.rotation.z - Math.PI})
-      customAnimation.to(this.human.rotation, 0.18, {z: this.human.rotation.z - 2 * Math.PI}, 'Linear', 0.14)
-      customAnimation.to(this.head.position, 0.1, { y: this.head.position.y + 0.9 * scale, x: this.head.position.x + 0.45 * scale })
-      customAnimation.to(this.head.position, 0.1, { y: this.head.position.y - 0.9 * scale, x: this.head.position.x - 0.45 * scale}, 'Linear', 0.1)
-      customAnimation.to(this.head.position, 0.15, { y: 7.56, x: 0}, 'Linear', 0.25)
-      customAnimation.to(this.body.scale, 0.1, { y: Math.max(scale, 1), x: Math.max(Math.min(1 / scale, 1), 0.7), z: Math.max(Math.min(1 / scale, 1), 0.7) })
-      customAnimation.to(this.body.scale, 0.1, { y: Math.min(0.9 / scale, 0.7), x: Math.max(scale, 1.2), z: Math.max(scale, 1.2)}, 'Linear', 0.1)
-      customAnimation.to(this.body.scale, 0.3, { y: 1, x: 1, z: 1}, 'Linear', 0.2 )
-    } else if (this.direction == 1) { // 沿 y 轴跳跃
-      customAnimation.to(this.human.rotation, 0.14, { x: this.human.rotation.x - Math.PI })
-      customAnimation.to(this.human.rotation, 0.18, { x: this.human.rotation.x - 2 * Math.PI}, 'Linear', 0.14)
-      customAnimation.to(this.head.position, 0.1, { y: this.head.position.y + 0.9 * scale, z: this.head.position.z - 0.45 * scale })
-      customAnimation.to(this.head.position, 0.1, { z: this.head.position.z + 0.45 * scale, y: this.head.position.y - 0.9 * scale}, 'Linear', 0.1)
-      customAnimation.to(this.head.position, 0.15, { y: 7.56, z: 0}, 'Linear', 0.25)
-      customAnimation.to(this.body.scale, 0.05, { y: Math.max(scale, 1), x: Math.max(Math.min(1 / scale, 1), 0.7), z: Math.max(Math.min(1 / scale, 1), 0.7) })
-      customAnimation.to(this.body.scale, 0.05, { y: Math.min(0.9 / scale, 0.7), x: Math.max(scale, 1.2), z: Math.max(scale, 1.2)}, 'Linear', 0.1)
-      customAnimation.to(this.body.scale, 0.2, { y: 1, x: 1, z: 1, }, 'Linear', 0.2)
+      customAnimation.to(0.14, this.human.rotation, {z: this.human.rotation.z - Math.PI})
+      customAnimation.to(0.18, this.human.rotation, {z: this.human.rotation.z - 2 * Math.PI}, 'Linear', 0.14)
+      customAnimation.to(0.1, this.head.position, { y: this.head.position.y + 0.9 * scale, x: this.head.position.x + 0.45 * scale })
+      customAnimation.to(0.1, this.head.position, { y: this.head.position.y - 0.9 * scale, x: this.head.position.x - 0.45 * scale}, 'Linear', 0.1)
+      customAnimation.to(0.15,this.head.position,  { y: 7.56, x: 0}, 'Linear', 0.25)
+      customAnimation.to(0.1, this.body.scale, { y: Math.max(scale, 1), x: Math.max(Math.min(1 / scale, 1), 0.7), z: Math.max(Math.min(1 / scale, 1), 0.7) })
+      customAnimation.to(0.1, this.body.scale, { y: Math.min(0.9 / scale, 0.7), x: Math.max(scale, 1.2), z: Math.max(scale, 1.2)}, 'Linear', 0.1)
+      customAnimation.to(0.3, this.body.scale, { y: 1, x: 1, z: 1}, 'Linear', 0.2 )
+    } else if (this.direction == 1) { // 沿 z 轴跳跃
+      customAnimation.to(0.14, this.human.rotation, { x: this.human.rotation.x - Math.PI })
+      customAnimation.to(0.18, this.human.rotation, { x: this.human.rotation.x - 2 * Math.PI}, 'Linear', 0.14)
+      customAnimation.to(0.1, this.head.position, { y: this.head.position.y + 0.9 * scale, z: this.head.position.z - 0.45 * scale })
+      customAnimation.to(0.1, this.head.position, { z: this.head.position.z + 0.45 * scale, y: this.head.position.y - 0.9 * scale}, 'Linear', 0.1)
+      customAnimation.to(0.15, this.head.position, { y: 7.56, z: 0}, 'Linear', 0.25)
+      customAnimation.to(0.05, this.body.scale, { y: Math.max(scale, 1), x: Math.max(Math.min(1 / scale, 1), 0.7), z: Math.max(Math.min(1 / scale, 1), 0.7) })
+      customAnimation.to(0.05, this.body.scale, { y: Math.min(0.9 / scale, 0.7), x: Math.max(scale, 1.2), z: Math.max(scale, 1.2)}, 'Linear', 0.1)
+      customAnimation.to(0.2, this.body.scale, { y: 1, x: 1, z: 1, }, 'Linear', 0.2)
     }
   }
   
@@ -204,17 +207,31 @@ class Bottle {
     this.status = 'jump'
   }
   
-  _jump() {
-    
+  _jump(tickTime) {
+    const t = tickTime / 1000
+    this.flyingTime = this.flyingTime + t
+    const translateH = this.velocity.vx * t // 水平方向
+    const translateY = this.velocity.vy * t - 0.5 * gameConf.gravity * t * t - gameConf.gravity * this.flyingTime * t // 竖直方向
+    this.obj.translateY(translateY)
+    this.obj.translateOnAxis(this.axis, translateH)
   }
 
+  stop() {
+    this.scale = 1 // 还原
+    this.flyingTime = 0 // 清空跳跃时间
+    this.status = 'stop'
+  }
+  
   // bottle 位置的更新
   update() {
     if (this.status === 'shrink') {
-      // 收缩
-      this._shrink()
+      this._shrink() // 收缩
+    } else if (this.status === 'jump') {
+      const tickTime = Date.now() - this.lastFrameTime // 两次 update 的时间间隔
+      this._jump(tickTime) // 跳跃
     }
     this.head.rotation.y += 0.06 // 顶部菱形旋转
+    this.lastFrameTime = Date.now() // 当前帧结束时间
   }
 }
 

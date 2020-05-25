@@ -9,17 +9,19 @@
  */
 
 import { Tween } from './tween'
-// console.log(Tween, '------')
+console.log(Tween.Quad.easeIn, 'Linear------')
 
 var customAnimation = exports.customAnimation = {}
 
-customAnimation.to = function (from, duration, to, type, delay) { // 状态转换
+customAnimation.to = function (duration, from, to, type, delay) { // 状态转换
+  // console.log(type, '---type!!!')
+  // return 
   // console.log(from, '+++++++')
   for (let prop in to) {
     // 使用闭包防止异步 setTimeout 计时结束之后循环中 prop 值已经改变了导致的问题
     // 闭包记录当前 setTimeout 中 prop 的 name 
     setTimeout(function (prop) {
-      return function() {
+      return function () {
         TweenAnimation(from[prop], to[prop], duration, type, function (value) {
           from[prop] = value
         })
@@ -30,12 +32,12 @@ customAnimation.to = function (from, duration, to, type, delay) { // 状态转�
   }
 }
 
-var TweenAnimation = exports.TweenAnimation = function TweenAnimation(from, to, duration, type, callback) { // 完成某一个相应的属性在某一个数学模型下在某一个时间点具有的值
+var TweenAnimation = exports.TweenAnimation = function TweenAnimation(from, to, duration = 300, type = 'Linear', callback) { // 完成某一个相应的属性在某一个数学模型下在某一个时间点具有的值
   // 逐帧绘制
   const options = {
     callback: function () { },
-    type: 'Linear',
-    duration: 300
+    // type: 'Linear',
+    // duration: 300
   }
   if (callback) {
     options.callback = callback
@@ -55,7 +57,11 @@ var TweenAnimation = exports.TweenAnimation = function TweenAnimation(from, to, 
   const startTime = Date.now() // 开始时间
   let lastTime = Date.now() // 上一次动画时间
 
-  const tweenFn = Tween[type] // 拿到对应的数学模型
+  // 获取数学模型
+  const getFunc = function(Tween, type) {
+    return type.split('.').reduce((acc, cur) => acc && acc[cur], Tween)
+  }
+  const tweenFn = getFunc(Tween, type) // 拿到对应的数学模型
 
   // 一帧要完成的事情
   // 绘制一帧
