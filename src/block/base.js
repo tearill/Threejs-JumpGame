@@ -49,8 +49,8 @@ export default class BaseBlock {
     }
     vertices.push([centerPosition.x + this.width / 2, centerPosition.z + this.width / 2])
     vertices.push([centerPosition.x + this.width / 2, centerPosition.z - this.width / 2])
-    vertices.push([centerPosition.x - this.width / 2, centerPosition.z + this.width / 2])
     vertices.push([centerPosition.x - this.width / 2, centerPosition.z - this.width / 2])
+    vertices.push([centerPosition.x + this.width / 2, centerPosition.z - this.width / 2])
     return vertices
   }
 }

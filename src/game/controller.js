@@ -40,7 +40,7 @@ class GameController {
 
     this.gameView.initGamePage(gamePageCallbacks)
     this.gameView.initGameOverPage(gameOverPageCallbacks)
-    this.gameModel.setStage('game')
+    // this.gameModel.setStage('game')
   }
 
 }

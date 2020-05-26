@@ -8,7 +8,7 @@ export default class GameOverPage {
   init(options) {
     console.log('game over page init')
     this.initGameOverCanvas(options)
-    console.log(options, '+++++')
+    // console.log(options, '+++++')
   }
 
   initGameOverCanvas(options) {
@@ -43,9 +43,30 @@ export default class GameOverPage {
   show() {
     // console.log('game over page show')
     this.obj.visible = true
+    this.bindTouchEvent()
   }
-
+  
   hide() {
     this.obj.visible = false
+    this.removeTouchEvent()
+  }
+
+  onTouchEnd = (e) => {
+    // console.log(e.changedTouches)
+    // return
+    const pageX = e.changedTouches[0].pageX
+    const pageY = e.changedTouches[0].pageY
+    if (pageX > this.region[0] && pageX < this.region[1] && pageY > this.region[2] && pageY < this.region[3]) {
+      this.callbacks.gameRestart()
+    }
+  }
+
+  bindTouchEvent() {
+    console.log('gameover touch end')
+    canvas.addEventListener('touchend', this.onTouchEnd)
+  }
+
+  removeTouchEvent() {
+    canvas.removeEventListener('touchend', this.onTouchEnd)
   }
 }

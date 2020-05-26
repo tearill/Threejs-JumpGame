@@ -205,15 +205,19 @@ class Bottle {
   
   jump() {
     this.status = 'jump'
+    this.translateH = 0
+    this.translateY = 0
   }
   
   _jump(tickTime) {
     const t = tickTime / 1000
-    this.flyingTime = this.flyingTime + t
     const translateH = this.velocity.vx * t // 水平方向
     const translateY = this.velocity.vy * t - 0.5 * gameConf.gravity * t * t - gameConf.gravity * this.flyingTime * t // 竖直方向
+    this.translateH += translateH
+    this.translateY += translateY
     this.obj.translateY(translateY)
     this.obj.translateOnAxis(this.axis, translateH)
+    this.flyingTime = this.flyingTime + t
   }
 
   stop() {
@@ -232,6 +236,11 @@ class Bottle {
     }
     this.head.rotation.y += 0.06 // 顶部菱形旋转
     this.lastFrameTime = Date.now() // 当前帧结束时间
+  }
+
+  reset() {
+    this.stop()
+    this.obj.position.set(bottleConf.initPosition.x, bottleConf.initPosition.y + 30, bottleConf.initPosition.z)
   }
 }
 

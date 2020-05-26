@@ -30,12 +30,12 @@ class Light {
     this.instances.shadowTarget = this.shadowTarget
   }
 
-  updatePosition (targetPosition) {
-    customAnimation.to(0.5, this.shadowTarget.position, {x: targetPosition.x, y: targetPosition.y, z: targetPosition.z})
-    customAnimation.to(0.5, this.shadowLight.position, {x: 10 + targetPosition.x, y: 30 + targetPosition.y, z: 20 + targetPosition.z})
+  updatePosition(targetPosition) {
+    customAnimation.to(0.5, this.shadowTarget.position, { x: targetPosition.x, y: targetPosition.y, z: targetPosition.z })
+    customAnimation.to(0.5, this.shadowLight.position, { x: 10 + targetPosition.x, y: 30 + targetPosition.y, z: 20 + targetPosition.z })
   }
 
-  reset () {
+  reset() {
     this.shadowLight.position.set(10, 30, 20)
     this.shadowTarget.position.set(0, 0, 0)
   }

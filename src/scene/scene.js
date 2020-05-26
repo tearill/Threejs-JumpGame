@@ -5,6 +5,7 @@ import background from '../objects/background'
 class Scene {
   constructor() {
     this.instance = null
+    this.currentScore = null
   }
 
   init() {
@@ -46,6 +47,26 @@ class Scene {
   updateCameraPosition(targetPosition) {
     this.camera.updatePosition(targetPosition)
     this.light.updatePosition(targetPosition)
+  }
+
+  addScore(scoreInstance) {
+    this.currentScore = scoreInstance
+    this.camera.instance.add(scoreInstance)
+    scoreInstance.position.x = -20
+    scoreInstance.position.y = 40
+  }
+
+  updateScore(scoreInstance) {
+    this.camera.instance.remove(this.currentScore)
+    this.currentScore = scoreInstance
+    this.camera.instance.add(scoreInstance)
+    scoreInstance.position.x = -20
+    scoreInstance.position.y = 40
+  }
+
+  reset() {
+    this.camera.reset()
+    this.light.reset()
   }
 }
 

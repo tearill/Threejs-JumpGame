@@ -16,12 +16,12 @@ class Camera {
     this.instance.lookAt(this.target)
   }
 
-  updatePosition (newTargetPosition) {
+  updatePosition(newTargetPosition) {
     customAnimation.to(0.5, this.instance.position, { x: newTargetPosition.x - 10, y: newTargetPosition.y + 10, z: newTargetPosition.z + 10 })
     customAnimation.to(0.5, this.target, { x: newTargetPosition.x, y: newTargetPosition.y, z: newTargetPosition.z })
   }
 
-  reset () {
+  reset() {
     this.instance.position.set(-10, 10, 10)
     this.target = new THREE.Vector3(0, 0, 0)
   }

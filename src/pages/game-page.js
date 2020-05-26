@@ -7,6 +7,7 @@ import blockConf from '../../config/block-config'
 import gameConf from '../../config/game-config'
 import bottleConf from '../../config/bottle-config'
 import utils from '../utils/index'
+import ScoreText from '../view3d/scoreText'
 
 const HIT_NEXT_BLOCK_CENTER = 1
 const HIT_CURRENT_BLOCK = 2
@@ -19,45 +20,54 @@ const HIT_NEXT_BLOCK_NORMAL = 7
 export default class GamePage {
   constructor(callbacks) {
     this.callbacks = callbacks
-    this.targetPosition = {
-
-    }
+    this.targetPosition = {}
+    this.axis = null
+    this.checkingHit = false
+    this.score = 0
   }
 
   init() {
     this.scene = scene
     this.ground = ground
-    this.bottle =  bottle
+    this.bottle = bottle
+    this.scoreText = new ScoreText()
     this.scene.init()
     this.ground.init()
     this.bottle.init()
+    this.scoreText.init({
+      fillStyle: 0x666699
+    })
     this.addInitBlock()
     this.addGround()
     this.addBottle()
+    this.addScore()
     this.bindTouchEvent()
     this.render()
-    this.checkingHit = false
   }
-  
+
   // 绑定 touch 事件
   bindTouchEvent() {
+    console.log('bind touch event')
     canvas.addEventListener('touchstart', this.touchStartCallback)
     canvas.addEventListener('touchend', this.touchEndCallback)
   }
 
   removeTouchEvent() {
+    console.log('remove touch event')
+    console.log(canvas, '-----canvas')
+    // return
     canvas.removeEventListener('touchstart', this.touchStartCallback)
     canvas.removeEventListener('touchend', this.touchEndCallback)
   }
 
-  touchStartCallback = () => {
+  touchStartCallback = (e) => {
     console.log('touch start callback')
     this.touchStartTime = Date.now()
     this.bottle.shrink()
     this.currentBlock.shrink()
   }
 
-  touchEndCallback = () => {
+  touchEndCallback = (e) => {
     console.log('touch end callback')
     this.touchEndTime = Date.now()
     const duration = this.touchEndTime - this.touchStartTime // 按压的时间间隔
@@ -73,7 +83,7 @@ export default class GamePage {
     this.checkingHit = true
     this.bottle.rotate()
     this.currentBlock.rebound()
-    this.bottle.jump()
+    this.bottle.jump(duration)
   }
 
   setDirection(direction) {
@@ -88,9 +98,9 @@ export default class GamePage {
   }
 
   getHitStatus(bottle, currentBlock, nextBlock, initY) {
-    debugger
+    // debugger
     let flyingTime = parseFloat(bottle.velocity.vy) / parseFloat(gameConf.gravity) * 2.0
-    initY = initY || +bottle.obj.position.y.toFixed(2)
+    initY = initY || bottle.obj.position.y.toFixed(2)
     let time = +((bottle.velocity.vy - Math.sqrt(Math.pow(bottle.velocity.vy, 2) - 2 * initY * gameConf.gravity)) / gameConf.gravity).toFixed(2)
     flyingTime -= time
     flyingTime = +flyingTime.toFixed(2)
@@ -101,7 +111,7 @@ export default class GamePage {
     bottle.destination = [+bottlePosition.x.toFixed(2), +bottlePosition.y.toFixed(2)]
     destination.push(+bottlePosition.x.toFixed(2), +bottlePosition.y.toFixed(2))
 
-    const bodyWidth = 1.8141* bottleConf.headRadius
+    const bodyWidth = 1.8141 * bottleConf.headRadius
     // nextBlock 的碰撞检测
     let result1, result2
     if (nextBlock) {
@@ -109,9 +119,9 @@ export default class GamePage {
       const nextPolygon = nextBlock.getVertices() // 顶点
       if (utils.pointInPolygon(destination, nextPolygon)) { // 是否在范围之内
         if (Math.abs(nextDiff) < 5) { // 靠近中心
-          result1 =  HIT_NEXT_BLOCK_CENTER
+          result1 = HIT_NEXT_BLOCK_CENTER
         } else {
-          result1 =  HIT_NEXT_BLOCK_NORMAL
+          result1 = HIT_NEXT_BLOCK_NORMAL
         }
       } else if (utils.pointInPolygon([destination[0] - bodyWidth / 2, destination[1]], nextPolygon) || utils.pointInPolygon([destination[0], destination[1] + bodyWidth / 2], nextPolygon)) {
         result1 = GAME_OVER_NEXT_BLOCK_BACK
@@ -119,7 +129,7 @@ export default class GamePage {
         result1 = GAME_OVER_NEXT_BLOCK_FRONT
       }
     }
-    
+
     if (currentBlock) {
       // currentBlock 的碰撞检测
       const currentPolygon = currentBlock.getVertices()
@@ -142,12 +152,12 @@ export default class GamePage {
     if (this.bottle) {
       this.bottle.update()
     }
-    if (this.checkingHit) {
+    // if (!this.checkingHit) {
       this.checkBottleHit() // 判断碰撞
-    }
-    if (this.visible) {
-      this.scene.render()
-    }
+    // }
+    // if (this.visible) {
+    //   this.scene.render()
+    // }
     requestAnimationFrame(this.render.bind(this))
   }
 
@@ -162,6 +172,7 @@ export default class GamePage {
         this.bottle.obj.position.x = this.bottle.destination[0]
         this.bottle.obj.position.z = this.bottle.destination[1]
         if (this.hit == HIT_NEXT_BLOCK_CENTER || this.hit == HIT_NEXT_BLOCK_NORMAL) {
+          this.updateScore(++this.score)
           // 更新下一个砖块 block
           this.updateNextBlock()
         }
@@ -169,6 +180,7 @@ export default class GamePage {
         // 游戏结束 game over
         this.removeTouchEvent()
         this.callbacks.showGameOverPage()
+        this.checkingHit = false
       }
     }
   }
@@ -182,19 +194,19 @@ export default class GamePage {
     const distance = Math.round(Math.random() * 20) + 20 // 随机远近
     this.currentBlock = this.nextBlock
     const targetPosition = this.targetPosition = {}
-    if (direction === 0) { // x 轴
-      targetPosition.x = this.currentBlock.instance.x + distance
-      targetPosition.y = this.currentBlock.instance.y
-      targetPosition.z = this.currentBlock.instance.z
-    } else if (direction === 1) { // z 轴
-      targetPosition.x = this.currentBlock.instance.x
-      targetPosition.y = this.currentBlock.instance.y
-      targetPosition.z = this.currentBlock.instance.z - distance
+    if (direction == 0) { // x 轴
+      targetPosition.x = this.currentBlock.instance.position.x + distance
+      targetPosition.y = this.currentBlock.instance.position.y
+      targetPosition.z = this.currentBlock.instance.position.z
+    } else if (direction == 1) { // z 轴
+      targetPosition.x = this.currentBlock.instance.position.x
+      targetPosition.y = this.currentBlock.instance.position.y
+      targetPosition.z = this.currentBlock.instance.position.z - distance
     }
     this.setDirection(direction) // 跳跃方向
-    if (type === 'cuboid') {
+    if (type == 'cuboid') {
       this.nextBlock = new Cuboid(targetPosition.x, targetPosition.y, targetPosition.z, width)
-    } else {
+    } else if (type == 'cylinder') {
       this.nextBlock = new Cylinder(targetPosition.x, targetPosition.y, targetPosition.z, width)
     }
     this.scene.instance.add(this.nextBlock.instance)
@@ -206,6 +218,7 @@ export default class GamePage {
 
     this.scene.updateCameraPosition(cameraTargetPosition)
     this.ground.updatePosition(cameraTargetPosition)
+    // this.show()
   }
 
   show() {
@@ -214,14 +227,15 @@ export default class GamePage {
 
   hide() {
     this.visible = false
+    // this.removeTouchEvent()
   }
 
   addInitBlock() { // 添加初始化砖块
     const cuboidBlock = this.currentBlock = new Cuboid(-15, 0, 0)
     const cylinderBlock = this.nextBlock = new Cylinder(23, 0, 0)
     this.targetPosition = {
-      x: 23, 
-      y: 0, 
+      x: 23,
+      y: 0,
       z: 0
     }
     const initPosition = 0
@@ -233,14 +247,49 @@ export default class GamePage {
   addGround() { // 添加地板
     this.scene.instance.add(this.ground.instance)
   }
-  
+
   addBottle() { // 添加跳跃的物体
     this.scene.instance.add(this.bottle.obj)
     this.bottle.showUp()
   }
 
+  addScore() {
+    this.scene.addScore(this.scoreText.instance)
+  }
+
+  updateScore(score) {
+    this.scoreText.updateScore(score)
+    this.scene.updateScore(this.scoreText.instance)
+  }
+
+  // 重启游戏
   restart() {
-    console.log('game page restart')
+    this.deleteObjectsFromScene()
+    this.scene.reset()
+    this.bottle.reset()
+    this.ground.reset()
+    // this.updateScore(0)
+    this.addInitBlock()
+    this.addGround()
+    this.addBottle()
+    this.bindTouchEvent()
+  }
+
+  // 清空场景中的物体
+  deleteObjectsFromScene() {
+    let obj = this.scene.instance.getObjectByName('block')
+    while (obj) {
+      this.scene.instance.remove(obj)
+      if (obj.geometry) {
+        obj.geometry.dispose()
+      }
+      if (obj.material) {
+        obj.material.dispose()
+      }
+      obj = this.scene.instance.getObjectByName('block')
+    }
+    this.scene.instance.remove(this.bottle.obj)
+    this.scene.instance.remove(this.ground.instance)
   }
 }
 
