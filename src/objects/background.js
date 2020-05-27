@@ -13,7 +13,6 @@ class Background {
       transparent: true,
       opacity: 1
     })
-
     this.instance = new THREE.Mesh(geometry, material)
   }
 }

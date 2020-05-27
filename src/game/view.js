@@ -1,11 +1,10 @@
 // 操作 view 页面相关
 import GamePage from '../pages/game-page'
 import GameOverPage from '../pages/game-over-page'
-import Event from '../utils/event'
 
 class GameView {
   constructor () {
-    // this.restartButtonClicked = new Event(this)
+    
   }
 
   showGameOverPage () {
@@ -27,7 +26,7 @@ class GameView {
     this.gameOverPage = new GameOverPage(callbacks)
     this.gameOverPage.init({
       camera: this.gamePage.scene.camera.instance,
-      scene: this.gamePage.scene.instance
+      // scene: this.gamePage.scene.instance
     })
   }
 

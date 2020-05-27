@@ -19,6 +19,8 @@ class Bottle {
     this.axis = null // 跳跃所沿着的轴
     this.flyingTime = 0 // 跳跃的运动时间
     this.scale = 1
+    this.translateH = 0
+    this.translateY = 0
     this.velocity = {
       vx: 0, // 水平方向速度
       vy: 0 //竖直方向速度
@@ -240,6 +242,8 @@ class Bottle {
 
   reset() {
     this.stop()
+    this.obj.rotation.x = 0
+    this.obj.rotation.z = 0
     this.obj.position.set(bottleConf.initPosition.x, bottleConf.initPosition.y + 30, bottleConf.initPosition.z)
   }
 }

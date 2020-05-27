@@ -3,6 +3,7 @@ import sceneConf from '../../config/scene-config'
 export default class GameOverPage {
   constructor(callbacks) {
     this.callbacks = callbacks
+    this.onTouchEnd = this.onTouchEnd.bind(this)
   }
 
   init(options) {
@@ -12,6 +13,7 @@ export default class GameOverPage {
   }
 
   initGameOverCanvas(options) {
+    // const openDataContext = wx.getOpenDataContext()
     const aspect = window.innerHeight / window.innerWidth
     this.region = [
       (window.innerWidth - 200) / 2,
@@ -24,6 +26,7 @@ export default class GameOverPage {
     this.canvas.width = window.innerWidth
     this.canvas.height = window.innerHeight
     this.texture = new THREE.Texture(this.canvas)
+    // this.texture = new THREE.Texture(openDataContext.canvas)
     this.material = new THREE.MeshBasicMaterial({ map: this.texture, transparent: true });
     this.geometry = new THREE.PlaneGeometry(sceneConf.frustumSize * 2, aspect * sceneConf.frustumSize * 2)
     this.obj = new THREE.Mesh(this.geometry, this.material)
@@ -47,6 +50,7 @@ export default class GameOverPage {
   }
   
   hide() {
+    console.log('gameover page hide!!!')
     this.obj.visible = false
     this.removeTouchEvent()
   }
@@ -62,11 +66,12 @@ export default class GameOverPage {
   }
 
   bindTouchEvent() {
-    console.log('gameover touch end')
+    console.log('gameover page add touchend')
     canvas.addEventListener('touchend', this.onTouchEnd)
   }
 
   removeTouchEvent() {
+    console.log('gameover page remove touchend')
     canvas.removeEventListener('touchend', this.onTouchEnd)
   }
 }

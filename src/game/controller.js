@@ -18,7 +18,7 @@ class GameController {
           this.gameView.showGamePage()
           break
         default:
-          break
+          // break
       }
     })
   }
@@ -28,6 +28,7 @@ class GameController {
     // 调用
     const gamePageCallbacks = {
       showGameOverPage: () => {
+        // debugger
         this.gameModel.setStage('game-over') // 驱动 model 改变
       }
     }

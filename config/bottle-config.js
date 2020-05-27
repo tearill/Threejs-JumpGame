@@ -7,5 +7,5 @@ export default {
     z: 0
   },
   headRadius: 2.1168, // 头部的半径
-  // bodyWidth: 3.84
+  bodyWidth: 3.84
 }
