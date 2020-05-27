@@ -11,6 +11,7 @@ import bottleConf from '../../config/bottle-config'
 import blockConf from '../../config/block-config'
 import gameConf from '../../config/game-config'
 import { customAnimation } from '../../libs/animation'
+import audioManager from '../modules/audio-manager'
 
 class Bottle {
   constructor() {
@@ -140,6 +141,7 @@ class Bottle {
   
   // 游戏开局 bottle 从天而降
   showUp() {
+    audioManager.init.play()
     customAnimation.to(0.5, this.obj.position, {
       x: bottleConf.initPosition.x, 
       y: bottleConf.initPosition.y + blockConf.height / 2,
@@ -245,6 +247,56 @@ class Bottle {
     this.obj.rotation.x = 0
     this.obj.rotation.z = 0
     this.obj.position.set(bottleConf.initPosition.x, bottleConf.initPosition.y + 30, bottleConf.initPosition.z)
+  }
+
+  // 前倾
+  forerake() {
+    this.status = 'forerake'
+    console.log('forerake')
+    // 整个位置下移 && bottle 绕着 x 或 z 旋转
+    setTimeout(() => {
+      if (this.direction === 0) { // 绕 z 轴旋转 90 度
+        customAnimation.to(1, this.obj.rotation, {
+          z: -Math.PI / 2
+        })
+      } else { // 绕 x 轴旋转 90 度
+        customAnimation.to(1, this.obj.rotation, {
+          x: -Math.PI / 2
+        })
+      }
+      setTimeout(() => {
+        customAnimation.to(0.4, this.obj.position, {
+          y: -blockConf.height / 2 + 1.2 // 移动到和 nextBlock 底边相近的位置
+        })
+      }, 350);
+    }, 200);
+  }
+
+  // 后倾
+  hypsokinesis() {
+    this.status = 'hypsokinesis'
+    setTimeout(() => {
+      if (this.direction === 0) {
+        customAnimation.to(0.8, this.obj.rotation, {
+          z: Math.PI / 2
+        })
+      } else {
+        customAnimation.to(0.8, this.obj.rotation, {
+          x: Math.PI / 2
+        })
+      }
+      setTimeout(() => {
+        customAnimation.to(0.4, this.obj.position, {
+          y: -blockConf.height / 2 + 1.2 // 移动到和 nextBlock 底边相近的位置
+        })
+        customAnimation.to(0.2, this.head.position, {
+          x: 1.125
+        })
+        customAnimation.to(0.2, this.head.position, {
+          x: 0,
+        }, 'Linear', 0.2)
+      }, 350);
+    }, 200);
   }
 }
 

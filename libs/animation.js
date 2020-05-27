@@ -11,6 +11,9 @@
 import { Tween } from './tween'
 console.log(Tween.Quad.easeIn, 'Linear------')
 
+let animationId = -1
+let stoppedAnimationId = animationId - 1
+
 var customAnimation = exports.customAnimation = {}
 
 customAnimation.to = function (duration, from, to, type, delay) { // 状态转换
@@ -32,7 +35,14 @@ customAnimation.to = function (duration, from, to, type, delay) { // 状态转�
   }
 }
 
-var TweenAnimation = exports.TweenAnimation = function TweenAnimation(from, to, duration = 300, type = 'Linear', callback) { // 完成某一个相应的属性在某一个数学模型下在某一个时间点具有的值
+const TweenAnimation = exports.TweenAnimation = function TweenAnimation(from, to, duration = 300, type = 'Linear', callback) { // 完成某一个相应的属性在某一个数学模型下在某一个时间点具有的值
+  const selfAnimationId = ++animationId
+  const frameCount = Math.ceil(duration * 1000 / 17) // 渲染帧数
+  let start = -1 // 当前渲染帧数
+  
+  const startTime = Date.now() // 开始时间
+  let lastTime = Date.now() // 上一次动画时间
+
   // 逐帧绘制
   const options = {
     callback: function () { },
@@ -51,11 +61,6 @@ var TweenAnimation = exports.TweenAnimation = function TweenAnimation(from, to, 
     options.duration = duration
   }
 
-  const frameCount = Math.ceil(duration * 1000 / 17) // 渲染帧数
-  let start = -1 // 当前渲染帧数
-
-  const startTime = Date.now() // 开始时间
-  let lastTime = Date.now() // 上一次动画时间
 
   // 获取数学模型
   const getFunc = function(Tween, type) {
@@ -93,11 +98,11 @@ var TweenAnimation = exports.TweenAnimation = function TweenAnimation(from, to, 
     // 通过数学模型计算位置
     const value = tweenFn(start, from, to - from, frameCount)
 
-    if (start <= frameCount) {
+    if (start <= frameCount && selfAnimationId > stoppedAnimationId) {
       // 没有全部走完 动画未结束
       options.callback(value)
       requestAnimationFrame(step)
-    } else {
+    } else if (start > frameCount && selfAnimationId > stoppedAnimationId) {
       // 动画结束
       options.callback(to, true) // 把最终位置交给回调函数
     }
@@ -108,4 +113,8 @@ var TweenAnimation = exports.TweenAnimation = function TweenAnimation(from, to, 
   }
 
   step()
+}
+
+const stopAllAnimation = exports.stopAllAnimation = function stopAllAnimation() {
+  stoppedAnimationId = animationId
 }

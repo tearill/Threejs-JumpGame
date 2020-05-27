@@ -9,6 +9,7 @@ import bottleConf from '../../config/bottle-config'
 import utils from '../utils/index'
 import ScoreText from '../view3d/scoreText'
 import audioManager from '../modules/audio-manager'
+import { stopAllAnimation } from '../../libs/animation'
 
 const HIT_NEXT_BLOCK_CENTER = 1
 const HIT_CURRENT_BLOCK = 2
@@ -236,36 +237,36 @@ export default class GamePage {
       } else { // game over
         this.combo = 0
         this.removeTouchEvent()
-        if (this.hit == GAME_OVER_NEXT_BLOCK_BACK || this.hit == GAME_OVER_CURRENT_BLOCK_BACK) {
-          // stopAllAnimation()
+        if (this.hit == GAME_OVER_NEXT_BLOCK_BACK || this.hit == GAME_OVER_CURRENT_BLOCK_BACK) { // 从后方掉落
+          stopAllAnimation()
           this.bottle.stop()
-          this.bottle.forerake()
+          this.bottle.forerake() // 前倾掉落
           audioManager.fall_from_block.play()
           this.bottle.obj.position.y = blockConf.height / 2
-          // setTimeout (() => {
-          this.uploadScore()
-          this.callbacks.showGameOverPage()
-          // }, 2000)
-        } else if (this.hit == GAME_OVER_NEXT_BLOCK_FRONT) {
-          // stopAllAnimation()
+          setTimeout (() => {
+            this.uploadScore()
+            this.callbacks.showGameOverPage()
+          }, 2000)
+        } else if (this.hit == GAME_OVER_NEXT_BLOCK_FRONT) { // 从前方掉落
+          stopAllAnimation() // 停止所有动画
           this.bottle.stop()
-          // this.bottle.hypsokinesis()
+          this.bottle.hypsokinesis() // 后倾
           audioManager.fall_from_block.play()
           this.bottle.obj.position.y = blockConf.height / 2
-          // setTimeout (() => {
-          this.uploadScore()
-          this.callbacks.showGameOverPage()
-          // }, 2000)
+          setTimeout (() => { // 预留动画时间
+            this.uploadScore()
+            this.callbacks.showGameOverPage()
+          }, 2000)
         } else {
-          // stopAllAnimation()
+          stopAllAnimation()
           this.bottle.stop()
           // this.bottle.straight()
           audioManager.fall.play()
           this.bottle.obj.position.y = blockConf.height / 2
-          // setTimeout (() => {
-          this.uploadScore()
-          this.callbacks.showGameOverPage()
-          // }, 2000)
+          setTimeout (() => {
+            this.uploadScore()
+            this.callbacks.showGameOverPage()
+          }, 2000)
         }
 
         this.checkingHit = false
