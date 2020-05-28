@@ -195,9 +195,9 @@ export default class GamePage {
     this.setDirection(direction)
     if (type == 'cuboid') {
       const cuboidSeed = Math.floor(Math.random() * 2)
-      this.nextBlock = new Cuboid(targetPosition.x, targetPosition.y, targetPosition.z, width)
+      this.nextBlock = new Cuboid(targetPosition.x, targetPosition.y, targetPosition.z, cuboidSeed ? 'well' : 'color', width)
     } else {
-      this.nextBlock = new Cylinder(targetPosition.x, targetPosition.y, targetPosition.z, width)
+      this.nextBlock = new Cylinder(targetPosition.x, targetPosition.y, targetPosition.z, 'color', width)
     }
     this.scene.instance.add(this.nextBlock.instance)
     // this.nextBlock.popup()
@@ -285,8 +285,8 @@ export default class GamePage {
   }
 
   addInitBlock() {
-    const cuboidBlock = this.currentBlock = new Cuboid(-15, 0, 0)
-    const cylinderBlock = this.nextBlock = new Cylinder(23, 0, 0)
+    const cuboidBlock = this.currentBlock = new Cuboid(-15, 0, 0, 'color')
+    const cylinderBlock = this.nextBlock = new Cylinder(23, 0, 0, 'color')
     this.targetPosition = {
       x: 23,
       y: 0,
